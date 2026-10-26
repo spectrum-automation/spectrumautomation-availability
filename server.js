@@ -13,7 +13,8 @@ const { promisify } = require('util');
 
 const scrypt = promisify(crypto.scrypt);
 
-const PORT = Number(process.env.PORT) || 3000;
+// Under IIS (iisnode, e.g. Azure App Service on Windows) PORT is a named pipe path, not a number.
+const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -165,7 +166,7 @@ function hasAccess(req, ev) {
 
 function grantAccess(req, res, ev) {
   if (!ev.pw) return;
-  const secure = req.socket.encrypted || req.headers['x-forwarded-proto'] === 'https';
+  const secure = req.socket.encrypted || req.headers['x-forwarded-proto'] === 'https' || !!req.headers['x-arr-ssl'];
   res.setHeader('Set-Cookie', [
     `${cookieName(ev)}=${accessToken(ev)}`,
     'Path=/',
@@ -373,6 +374,7 @@ setInterval(() => {
 }, 25000).unref();
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
-server.listen(PORT, HOST, () => {
-  console.log(`Meeting availability running at http://localhost:${PORT} (data in ${DATA_DIR})`);
+const pipe = Number.isNaN(Number(PORT));
+server.listen(...(pipe ? [PORT] : [Number(PORT), HOST]), () => {
+  console.log(`Meeting availability listening on ${pipe ? PORT : `http://localhost:${PORT}`} (data in ${DATA_DIR})`);
 });

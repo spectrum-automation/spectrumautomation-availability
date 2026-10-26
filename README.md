@@ -56,7 +56,10 @@ Then open <http://localhost:3000>.
 
 ## Hosting
 
-Run it as a long-lived process (a Windows service via NSSM, `pm2`, systemd, or a container) and back
+Production runs on Azure App Service (Windows) and deploys from GitHub Actions on every push to
+`main`. See [DEPLOY.md](DEPLOY.md) for the setup.
+
+Elsewhere, run it as a long-lived process (a Windows service via NSSM, `pm2`, systemd, or a container) and back
 up `DATA_DIR`. To put it behind a reverse proxy:
 
 - **Response buffering must be off** for `/api/events/*/stream`, or live updates will be delayed.

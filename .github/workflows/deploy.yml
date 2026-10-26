@@ -1,0 +1,54 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # OIDC sign-in to Azure
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AZURE_WEBAPP_NAME: sa-availability
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check syntax
+        run: |
+          node --check server.js
+          node --check public/app.js
+
+      # No npm dependencies and no build step: ship only what the app needs at runtime.
+      - name: Stage package
+        run: |
+          mkdir -p dist
+          cp -r server.js package.json web.config public dist/
+
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: dist
