@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting Availability</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section id="setup" hidden>
+    <h1>Find a meeting time</h1>
+    <p class="lede">Create an event, share the link, and everyone highlights the times they're free.</p>
+    <form id="setup-form" class="card">
+      <label>Event name
+        <input name="title" required maxlength="80" placeholder="Project kickoff">
+      </label>
+      <label>Password <span class="muted small">(optional)</span>
+        <span class="pw-row">
+          <input name="password" minlength="4" maxlength="200" autocomplete="off" spellcheck="false" placeholder="Leave blank for anyone with the link">
+          <button type="button" id="new-password" title="Generate a new password">Generate</button>
+        </span>
+        <span class="muted small hint">Attendees will need this to open the event. Send it separately from the link.</span>
+      </label>
+      <div class="row">
+        <label>From <input type="date" name="from" required></label>
+        <label>To <input type="date" name="to" required></label>
+      </div>
+      <label class="check"><input type="checkbox" name="weekdays" checked> Weekdays only</label>
+      <div class="row">
+        <label>Earliest <select name="start"></select></label>
+        <label>Latest <select name="end"></select></label>
+        <label>Slot length
+          <select name="step">
+            <option value="15">15 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="60">60 min</option>
+          </select>
+        </label>
+      </div>
+      <p class="error" id="setup-error" role="alert"></p>
+      <button type="submit" class="primary">Create event</button>
+    </form>
+  </section>
+
+  <section id="unlock" hidden>
+    <h1 id="unlock-title"></h1>
+    <p class="lede">This event is password protected. Enter the password to view and add availability.</p>
+    <form id="unlock-form" class="card">
+      <label>Password
+        <input type="password" name="password" required autocomplete="off">
+      </label>
+      <p class="error" id="unlock-error" role="alert"></p>
+      <button type="submit" class="primary">Open event</button>
+    </form>
+  </section>
+
+  <section id="board" hidden>
+    <header class="board-head">
+      <div>
+        <h1 id="title"></h1>
+        <p class="muted" id="tz"></p>
+      </div>
+      <div class="actions">
+        <span id="status" class="status" aria-live="polite"></span>
+        <button id="copy" class="primary">Copy share link</button>
+        <button id="new">New event</button>
+      </div>
+    </header>
+
+    <div class="card people">
+      <label class="name">Your name
+        <input id="name" autocomplete="name" maxlength="40" placeholder="e.g. Sam">
+      </label>
+      <div>
+        <span class="muted small" id="people-count"></span>
+        <ul id="participants"></ul>
+      </div>
+    </div>
+
+    <div class="grids">
+      <div class="card">
+        <h2>Your availability</h2>
+        <p class="muted small">Choose what to mark, then click and drag across the calendar. Starting a drag on a slot already marked that way clears it.</p>
+        <div class="brushes" aria-label="Mark slots as">
+          <button type="button" class="brush available" data-brush="1" aria-pressed="true">Available</button>
+          <button type="button" class="brush preferred" data-brush="2" aria-pressed="false">Preferred</button>
+          <button type="button" class="brush unavailable" data-brush="3" aria-pressed="false">Not available</button>
+          <button type="button" class="brush erase" data-brush="0" aria-pressed="false">Erase</button>
+        </div>
+        <div class="grid-wrap">
+          <div id="mine" class="grid"></div>
+          <div id="mine-lock" class="lock">Enter your name above to add your availability.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Group availability</h2>
+        <p class="muted small legend">
+          <span>0</span><span class="ramp"></span><span id="legend-max">0</span> can attend
+          <span class="pref-dot"></span> someone prefers
+        </p>
+        <div class="grid-wrap"><div id="group" class="grid"></div></div>
+        <div id="detail" class="detail muted small">Hover over a slot to see who's free.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Best times</h2>
+      <ol id="best"></ol>
+    </div>
+  </section>
+</main>
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
