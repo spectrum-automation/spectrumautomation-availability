@@ -67,12 +67,17 @@ dropped when the app goes idle.
 GitHub signs in to Azure with OIDC as a user-assigned managed identity. The identity can only
 manage this one web app, and only workflow runs using the `production` environment can use it.
 
+The `spectrum-automation` org issues OIDC subjects that include the owner and repository IDs
+(`owner@id/repo@id`), so the subject must use that form exactly, not the plain `owner/repo`.
+
 ```bash
+SUBJECT='repo:spectrum-automation@73824620/spectrumautomation-availability@1434132223:environment:production'
+
 az identity create -g $RG -n $ID -l australiaeast
 
 az identity federated-credential create -g $RG --identity-name $ID -n github-production \
   --issuer https://token.actions.githubusercontent.com \
-  --subject repo:$REPO:environment:production \
+  --subject "$SUBJECT" \
   --audiences api://AzureADTokenExchange
 
 az role assignment create \
@@ -133,4 +138,4 @@ az webapp restart -g $RG -n $APP
 | Password prompt shows a generic IIS error page | `httpErrors existingResponse="PassThrough"` missing from `web.config`. |
 | Events vanish after a deploy | `DATA_DIR` not set, so data went to `wwwroot\data`. Set it to `D:\home\data`. |
 | Different people see different data | More than one instance or Node process. Keep instance count and `nodeProcessCountPerApplication` at 1. |
-| Deploy fails at "Sign in to Azure" | Federated credential subject must be exactly `repo:spectrum-automation/spectrumautomation-availability:environment:production`. |
+| Deploy fails at "Sign in to Azure" (`AADSTS700213`) | The federated credential subject must match the one in the error exactly. This org uses `repo:spectrum-automation@73824620/spectrumautomation-availability@1434132223:environment:production`. |
